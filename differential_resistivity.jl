@@ -46,20 +46,22 @@ function load_field_vals(T,n,x)
     T_str = @sprintf("%1.2e",T)
     n_str = @sprintf("%1.2e",n)
     x_str = @sprintf("%1.2e",x)
-    field_df = DataFrame(CSV.File("./field_vals/set_1/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv"))
+    field_df = DataFrame(CSV.File("./field_vals_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv"))
     return field_df
 end
 
 
-x_vals = collect(9.5:0.5:11.5) # μm
-T = 1 # K
-n = 2e12 # cm^-2
+x_vals_μm = 9.5:0.5:11.5 # μm
+x_vals_m = collect(x_vals_μm) .* 1e-6 # meters
 
-field_df_x_9_5 = load_field_vals(T,n,x_vals[1])
-field_df_x_10_0 = load_field_vals(T,n,x_vals[2])
-field_df_x_10_5 = load_field_vals(T,n,x_vals[3])
-field_df_x_11_0 = load_field_vals(T,n,x_vals[4])
-field_df_x_11_5 = load_field_vals(T,n,x_vals[5])
+T::Float64 = 2.0 # K
+n::Float64 = 1.4e12 # cm^-2
+
+field_df_x_9_5 = load_field_vals(T,n,x_vals_μm[1])
+field_df_x_10_0 = load_field_vals(T,n,x_vals_μm[2])
+field_df_x_10_5 = load_field_vals(T,n,x_vals_μm[3])
+field_df_x_11_0 = load_field_vals(T,n,x_vals_μm[4])
+field_df_x_11_5 = load_field_vals(T,n,x_vals_μm[5])
 # field_df_x_12_0 = load_field_vals(T,n,x_vals[6])
 
 fields_x_9_5 = field_df_x_9_5[:,2]
@@ -92,14 +94,14 @@ function voltages(x_vals, fields_matrix)
 
     for k=1:N
         fields = fields_matrix[k,:]
-        push!(voltages, trapezoid(x_vals,fields) * 1e-6)
+        push!(voltages, trapezoid(x_vals,fields))
     end
 
     return voltages 
 end
 
 
-Vs = voltages(x_vals, fields_matrix)
+Vs = voltages(x_vals_m, fields_matrix)
 
 
 function drift_velocity_to_current(n,s)

@@ -53,7 +53,7 @@ function load_γs_df(T,n,s)
     T_str = @sprintf("%1.2e",T)
     n_str = @sprintf("%1.2e",n)
     s_str = @sprintf("%1.2e",s)
-    return DataFrame(CSV.File("./amp_rates_csv/test_2/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv"))
+    return DataFrame(CSV.File("./amp_rates_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv"))
 end
 
 function γs_df_to_dict(γs_df)
@@ -422,28 +422,31 @@ function write_fields_to_file(T,n,x,s_vals,field_vals)
     T_str = @sprintf("%1.2e",T)
     n_str = @sprintf("%1.2e",n)
     x_str = @sprintf("%1.2e",x)
-    CSV.write("./field_vals/set_1/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv", fields_df)
+    CSV.write("./field_vals_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv", fields_df)
 end
 
 
 
 begin
-    T::Float64 = 1 # K
-    n::Float64 = 2e12 # cm^-2
+    T::Float64 = 2.0 # K
+    n::Float64 = 1.4e12 # cm^-2
 
-    x1::Float64 = 9.0 # μm
-    x2::Float64 = 12.0
-    # x3::Float64 = 10.5
-    # x4::Float64 = 11.0
-    # x5::Float64 = 11.5
+    x1::Float64 = 9.5 # μm
+    x2::Float64 = 10.0
+    x3::Float64 = 10.5
+    x4::Float64 = 11.0
+    x5::Float64 = 11.5
+    # x6::Float64 = 12.0
 
     s_vals = 0.0:0.05:2.0
 
     field_vals_1 = Float64[]
     field_vals_2 = Float64[]
-    # field_vals_3 = Float64[]
-    # field_vals_4 = Float64[]
-    # field_vals_5 = Float64[]
+    field_vals_3 = Float64[]
+    field_vals_4 = Float64[]
+    field_vals_5 = Float64[]
+    # field_vals_6 = Float64[]
+
 
     for s in s_vals
         println("s = ",s)
@@ -454,19 +457,23 @@ begin
         @time field_2 = compute_field(T,n,s,x2)
         push!(field_vals_2, field_2)
 
-        # @time field_3 = compute_field(T,n,s,x3)
-        # push!(field_vals_3, field_3)
+        @time field_3 = compute_field(T,n,s,x3)
+        push!(field_vals_3, field_3)
 
-        # @time field_4 = compute_field(T,n,s,x4)
-        # push!(field_vals_4, field_4)
+        @time field_4 = compute_field(T,n,s,x4)
+        push!(field_vals_4, field_4)
 
-        # @time field_5 = compute_field(T,n,s,x5)
-        # push!(field_vals_5, field_5)
+        @time field_5 = compute_field(T,n,s,x5)
+        push!(field_vals_5, field_5)
+
+        # @time field_6 = compute_field(T,n,s,x6)
+        # push!(field_vals_6, field_6)
     end
 
     write_fields_to_file(T,n,x1,s_vals,field_vals_1)
     write_fields_to_file(T,n,x2,s_vals,field_vals_2)
-    # write_fields_to_file(T,n,x3,s_vals,field_vals_3)
-    # write_fields_to_file(T,n,x4,s_vals,field_vals_4)
-    # write_fields_to_file(T,n,x5,s_vals,field_vals_5)
+    write_fields_to_file(T,n,x3,s_vals,field_vals_3)
+    write_fields_to_file(T,n,x4,s_vals,field_vals_4)
+    write_fields_to_file(T,n,x5,s_vals,field_vals_5)
+    # write_fields_to_file(T,n,x6,s_vals,field_vals_6)
 end

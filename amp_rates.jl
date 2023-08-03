@@ -558,8 +558,8 @@ qvals = vcat([(qx_vals[i],qy_vals[j]) for i=1:size(qx_vals,1), j=1:size(qy_vals,
 s_vals = 0.0:0.05:2.0 # vD / vS
 # μ = 165e-3 # in units of eV
 
-T = 1 # Kelvin
-n = 2e12 # cm^-2
+T = 2 # Kelvin
+n = 1.4e12 # cm^-2
 
 T_str = @sprintf("%1.2e",T)
 n_str = @sprintf("%1.2e",n)
@@ -582,5 +582,5 @@ for s in s_vals
     end
 
     s_str = @sprintf("%1.2e",s)
-    CSV.write("./amp_rates_csv/test_3/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv", γs_df)
+    CSV.write("./amp_rates_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv", γs_df)
 end
