@@ -24,7 +24,7 @@ const n_flavors::Int32 = 4
 
 const ergs_per_eV::Float64 = 1.602e-12
 
-const D::Float64 = 30 * ergs_per_eV # 30 eV, converted to ergs
+const D::Float64 = 19 * ergs_per_eV # 19 eV, converted to ergs
 
 const e_statC::Float64 = -4.80326e-10 # statC
 const e_C::Float64 = -1.60217663e-19 # coulombs
@@ -53,7 +53,9 @@ function load_γs_df(T,n,s)
     T_str = @sprintf("%1.2e",T)
     n_str = @sprintf("%1.2e",n)
     s_str = @sprintf("%1.2e",s)
-    return DataFrame(CSV.File("./amp_rates_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv"))
+    # return DataFrame(CSV.File("./amp_rates_csv/D_19_eV/2K/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv"))
+    # return DataFrame(CSV.File("./amp_rates_csv/D_19_eV/300K/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv"))
+    return DataFrame(CSV.File("./amp_rates_csv/D_19_eV/vary_n/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv"))
 end
 
 function γs_df_to_dict(γs_df)
@@ -73,9 +75,9 @@ end
 # interpolate γs
 
 function γ_interps(γs_dict)
-    qx_dict_vec= union(sort([key[1] for key in keys(γs_dict)]))
+    qx_dict_vec = union(sort([key[1] for key in keys(γs_dict)]))
     qx_dict_range = range(qx_dict_vec[1],qx_dict_vec[end],length=size(qx_dict_vec,1))
-    qy_dict_vec= union(sort([key[1] for key in keys(γs_dict)]))
+    qy_dict_vec = union(sort([key[2] for key in keys(γs_dict)]))
     qy_dict_range = range(qy_dict_vec[1],qy_dict_vec[end],length=size(qy_dict_vec,1))
     Γamp_vals = [γs_dict[qx,qy][4] for qx in qx_dict_range, qy in qy_dict_range]
     γem_vals = [γs_dict[qx,qy][1] for qx in qx_dict_range, qy in qy_dict_range]
@@ -308,7 +310,8 @@ end
 lhs_integrand(β,kx,ky,r,s) = kx/sqrt(kx^2 + ky^2) * m∂f∂ϵ(β,kx,ky,r,s) * ∂ϵ∂kx(kx,ky,r,s)
 
 function integrate_lhs(β,r,s)
-    kmin = max(1 / (1 + r*s) - (12/β), 0.0)
+    ε = 1e-12
+    kmin = max(1 / (1 + r*s) - (12/β), ε)
     kmax = 1 / (1 - r*s) + (12/β)
 
     k_steps = 2000
@@ -422,58 +425,84 @@ function write_fields_to_file(T,n,x,s_vals,field_vals)
     T_str = @sprintf("%1.2e",T)
     n_str = @sprintf("%1.2e",n)
     x_str = @sprintf("%1.2e",x)
-    CSV.write("./field_vals_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv", fields_df)
+    # CSV.write("./field_vals_csv/D_19_eV/2K/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv", fields_df)
+    # CSV.write("./field_vals_csv/D_19_eV/300K/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv", fields_df)
+    CSV.write("./field_vals_csv/D_19_eV/vary_n/" * replace("T="*T_str*"_n="*n_str*"_x="*x_str, "."=>"-") * ".csv", fields_df)
 end
 
 
 
-begin
-    T::Float64 = 2.0 # K
-    n::Float64 = 1.4e12 # cm^-2
+# begin
+#     T::Float64 = 2.0 # K
+#     n::Float64 = 1.4e12 # cm^-2
 
-    x1::Float64 = 9.5 # μm
-    x2::Float64 = 10.0
-    x3::Float64 = 10.5
-    x4::Float64 = 11.0
-    x5::Float64 = 11.5
-    # x6::Float64 = 12.0
+#     x1::Float64 = 9.5 # μm
+#     x2::Float64 = 10.0
+#     x3::Float64 = 10.5
+#     x4::Float64 = 11.0
+#     x5::Float64 = 11.5
+#     # x6::Float64 = 12.0
 
-    s_vals = 0.0:0.05:2.0
+#     # s_vals = vcat(collect(0.0:0.05:2.0),collect(2.1:0.1:8.2))
+#     s_vals = 0.0:0.1:6.6
 
-    field_vals_1 = Float64[]
-    field_vals_2 = Float64[]
-    field_vals_3 = Float64[]
-    field_vals_4 = Float64[]
-    field_vals_5 = Float64[]
-    # field_vals_6 = Float64[]
+#     field_vals_1 = Float64[]
+#     field_vals_2 = Float64[]
+#     field_vals_3 = Float64[]
+#     field_vals_4 = Float64[]
+#     field_vals_5 = Float64[]
+#     # field_vals_6 = Float64[]
 
 
-    for s in s_vals
-        println("s = ",s)
+#     for s in s_vals
+#         println("s = ",s)
 
-        @time field_1 = compute_field(T,n,s,x1)
-        push!(field_vals_1, field_1)
+#         @time field_1 = compute_field(T,n,s,x1)
+#         push!(field_vals_1, field_1)
 
-        @time field_2 = compute_field(T,n,s,x2)
-        push!(field_vals_2, field_2)
+#         @time field_2 = compute_field(T,n,s,x2)
+#         push!(field_vals_2, field_2)
 
-        @time field_3 = compute_field(T,n,s,x3)
-        push!(field_vals_3, field_3)
+#         @time field_3 = compute_field(T,n,s,x3)
+#         push!(field_vals_3, field_3)
 
-        @time field_4 = compute_field(T,n,s,x4)
-        push!(field_vals_4, field_4)
+#         @time field_4 = compute_field(T,n,s,x4)
+#         push!(field_vals_4, field_4)
 
-        @time field_5 = compute_field(T,n,s,x5)
-        push!(field_vals_5, field_5)
+#         @time field_5 = compute_field(T,n,s,x5)
+#         push!(field_vals_5, field_5)
 
-        # @time field_6 = compute_field(T,n,s,x6)
-        # push!(field_vals_6, field_6)
-    end
+#         # @time field_6 = compute_field(T,n,s,x6)
+#         # push!(field_vals_6, field_6)
+#     end
 
-    write_fields_to_file(T,n,x1,s_vals,field_vals_1)
-    write_fields_to_file(T,n,x2,s_vals,field_vals_2)
-    write_fields_to_file(T,n,x3,s_vals,field_vals_3)
-    write_fields_to_file(T,n,x4,s_vals,field_vals_4)
-    write_fields_to_file(T,n,x5,s_vals,field_vals_5)
-    # write_fields_to_file(T,n,x6,s_vals,field_vals_6)
-end
+#     write_fields_to_file(T,n,x1,s_vals,field_vals_1)
+#     write_fields_to_file(T,n,x2,s_vals,field_vals_2)
+#     write_fields_to_file(T,n,x3,s_vals,field_vals_3)
+#     write_fields_to_file(T,n,x4,s_vals,field_vals_4)
+#     write_fields_to_file(T,n,x5,s_vals,field_vals_5)
+#     # write_fields_to_file(T,n,x6,s_vals,field_vals_6)
+# end
+
+
+# begin
+#     T::Float64 = 300.0 # K
+#     n::Float64 = 1.4e12 # cm^-2
+
+#     x_vals = 0.0:0.5:12.0
+#     # s_vals = vcat(collect(0.0:0.05:2.0),collect(2.1:0.1:8.2))
+#     s_vals = 0.0:0.1:6.0
+
+#     for x in x_vals
+#         println("x = ", x)
+#         field_vals = Float64[]
+
+#         for s in s_vals
+#             println("s = ",s)
+#             @time field = compute_field(T,n,s,x)
+#             push!(field_vals, field)
+#         end
+
+#         write_fields_to_file(T,n,x,s_vals,field_vals)
+#     end
+# end

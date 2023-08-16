@@ -24,7 +24,7 @@ const n_flavors::Int32 = 4
 
 const ergs_per_eV::Float64 = 1.602e-12
 
-const D::Float64 = 30 * ergs_per_eV # 30 eV, converted to ergs
+const D::Float64 = 19 * ergs_per_eV # 19 eV, converted to ergs
 
 const e_statC::Float64 = -4.80326e-10 # statC
 const e_C::Float64 = -1.60217663e-19 # coulombs
@@ -433,7 +433,7 @@ end
 function make_γem_dictionary_unscaled(β,qvals,s)
     r = 0.021
     ε = 1e-8
-    accuracy_digits = 6
+    accuracy_digits = 3
     kymin,kymax = -3,3
     kxmin,kxmax = -3,3
 
@@ -452,7 +452,7 @@ end
 function make_γabs_dictionary_unscaled(β,qvals,s)
     r = 0.021
     ε = 1e-8
-    accuracy_digits = 6
+    accuracy_digits = 3
     kymin,kymax = -3,3
     kxmin,kxmax = -3,3
 
@@ -550,37 +550,94 @@ end
 
 
 
-qx_vals = -2.5:0.1:2.5
-qy_vals = -2.5:0.1:2.5
-qvals = vcat([(qx_vals[i],qy_vals[j]) for i=1:size(qx_vals,1), j=1:size(qy_vals,1)]...)
+# # qx_vals = -2.5:0.1:2.5
+# # qy_vals = -2.5:0.1:2.5
+# # qvals = vcat([(qx_vals[i],qy_vals[j]) for i=1:size(qx_vals,1), j=1:size(qy_vals,1)]...)
 
-# β = 100 # in units of μ^-1
-s_vals = 0.0:0.05:2.0 # vD / vS
-# μ = 165e-3 # in units of eV
+# # β = 100 # in units of μ^-1
+# s_vals = 0.0:0.1:8.0 # vD / vS
+# # μ = 165e-3 # in units of eV
 
-T = 2 # Kelvin
-n = 1.4e12 # cm^-2
+# T::Float64 = 300.0 # Kelvin
+# n::Float64 = 1.4e12 # cm^-2
 
-T_str = @sprintf("%1.2e",T)
-n_str = @sprintf("%1.2e",n)
+# T_str = @sprintf("%1.2e",T)
+# n_str = @sprintf("%1.2e",n)
 
-μ = carrier_density_to_chemical_potential(n)
-β = compute_β(T,μ)
+# μ = carrier_density_to_chemical_potential(n)
+# β = compute_β(T,μ)
 
-for s in s_vals
-    println("s = ", s)
-    @time begin
-        γem_dict_unscaled = make_γem_dictionary_unscaled(β,qvals,s)
-        γabs_dict_unscaled = make_γabs_dictionary_unscaled(β,qvals,s)
+# for s in s_vals
+#     println("s = ", s)
 
-        γem_dict_scaled = rescale_γs(γem_dict_unscaled,μ)
-        γabs_dict_scaled = rescale_γs(γabs_dict_unscaled,μ)
+#     s_str = @sprintf("%1.2e",s)
+#     if isfile("./amp_rates_csv/D_19_eV/300K/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv")
+#         continue
+#     end
 
-        τinv_dict = make_τinv_dict(qvals)
+#     kmax = 1 / (1 - r_LA*s) + (12/β)
+#     qx_vals = range(-2.05*kmax, 2.05*kmax, length=51)
+#     qy_vals = range(-2.05*kmax, 2.05*kmax, length=51)
+#     qvals = vcat([(qx_vals[i],qy_vals[j]) for i=1:size(qx_vals,1), j=1:size(qy_vals,1)]...)
 
-        γs_df = γs_dict_to_df(γem_dict_scaled, γabs_dict_scaled, τinv_dict)
-    end
+#     @time begin
+#         γem_dict_unscaled = make_γem_dictionary_unscaled(β,qvals,s)
+#         γabs_dict_unscaled = make_γabs_dictionary_unscaled(β,qvals,s)
 
-    s_str = @sprintf("%1.2e",s)
-    CSV.write("./amp_rates_csv/set_1/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv", γs_df)
-end
+#         γem_dict_scaled = rescale_γs(γem_dict_unscaled,μ)
+#         γabs_dict_scaled = rescale_γs(γabs_dict_unscaled,μ)
+
+#         τinv_dict = make_τinv_dict(qvals)
+
+#         γs_df = γs_dict_to_df(γem_dict_scaled, γabs_dict_scaled, τinv_dict)
+#     end
+
+#     CSV.write("./amp_rates_csv/D_19_eV/300K/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv", γs_df)
+# end
+
+
+
+
+# # now we want to do this computation for varying carrier densities at T=2K
+
+# T::Float64 = 2.0 # K
+# T_str = @sprintf("%1.2e",T)
+
+# n_vals = range(0.0, 3.0e12, length=21)[2:end] # cm^-2
+# s_vals = [0.9, 1.1, 2.0, 5.0, 10.0]
+
+# for n in n_vals
+#     println("n = ", n)
+#     n_str = @sprintf("%1.2e",n)
+
+#     μ = carrier_density_to_chemical_potential(n)
+#     β = compute_β(T,μ)
+
+#     for s in s_vals
+#         println("s = ", s)
+#         s_str = @sprintf("%1.2e",s)
+
+#         if isfile("./amp_rates_csv/D_19_eV/vary_n/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv")
+#             continue
+#         end
+    
+#         kmax = 1 / (1 - r_LA*s) + (12/β)
+#         qx_vals = range(-2.05*kmax, 2.05*kmax, length=51)
+#         qy_vals = range(-2.05*kmax, 2.05*kmax, length=51)
+#         qvals = vcat([(qx_vals[i],qy_vals[j]) for i=1:size(qx_vals,1), j=1:size(qy_vals,1)]...)
+    
+#         @time begin
+#             γem_dict_unscaled = make_γem_dictionary_unscaled(β,qvals,s)
+#             γabs_dict_unscaled = make_γabs_dictionary_unscaled(β,qvals,s)
+    
+#             γem_dict_scaled = rescale_γs(γem_dict_unscaled,μ)
+#             γabs_dict_scaled = rescale_γs(γabs_dict_unscaled,μ)
+    
+#             τinv_dict = make_τinv_dict(qvals)
+    
+#             γs_df = γs_dict_to_df(γem_dict_scaled, γabs_dict_scaled, τinv_dict)
+#         end
+    
+#         CSV.write("./amp_rates_csv/D_19_eV/vary_n/" * replace("T="*T_str*"_n="*n_str*"_s="*s_str, "."=>"-") * ".csv", γs_df)
+#     end
+# end
